@@ -1,6 +1,7 @@
 const axios = require('axios');
 const MongoClient = require('mongodb').MongoClient;
-const url = "mongodb://localhost:27017/";
+const keys = require('./keys.js');
+const uri = keys.url;
 
 //runs main() initially and then once every hour.
 main();
@@ -10,7 +11,7 @@ setInterval(function(){
 
 //handles all functions including connection to DB and writing to DB
 function main() {
-    MongoClient.connect(url, {useUnifiedTopology: true}, function(err,db) {
+    MongoClient.connect(uri, {useUnifiedTopology: true}, function(err,db) {
         if(err) throw err;
         console.log('===============================');
         console.log("Server: spinning up on port 27017");
