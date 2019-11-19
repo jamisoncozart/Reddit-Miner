@@ -3,71 +3,100 @@ const MongoClient = require('mongodb').MongoClient;
 const keys = require('./keys.js');
 const uri = keys.url;
 
-//runs main() initially and then once every hour.
 main();
+//calls main() every 6 hours
 setInterval(function(){
     main();
-}, 1000 * 60 * 60);
+}, 40000/* 1000 * 60 * 60 * 6 */);
 
-//handles all functions including connection to DB and writing to DB
+
 function main() {
+    axios.get('http://www.reddit.com/.json')
+    .then(response => {
+        makeRequestsFromArray(response, response.data.data.children);
+    })
+    .catch(error => {
+        console.log(error);
+    })
+    .finally(function(){
+        //runs every time
+    })
+}
+
+function makeRequestsFromArray(response, postArray) {
+    let index = 0;
     MongoClient.connect(uri, {useUnifiedTopology: true}, function(err,db) {
         if(err) throw err;
-        console.log('===============================');
+        console.log('=================================');
         console.log("Server: spinning up on port 27017");
+        console.log("Time: " + getDateTime());
+        console.log('---------------------------------');
         let dbase = db.db('redditMining');
-        axios.get("https://www.reddit.com/.json")
-        .then(function(response){
-            console.log('Pushing posts to DB');
-            let redditJSON = response.data.data.children;
-            writeToDB(redditJSON, dbase);            
-        })
-        .catch(function(error){
-            console.log(error);
-        })
-        .finally(function(){
-            db.close(); //always runs
-        });
-        console.log('DB Write at time: ' + getDateTime());
-        console.log('_______________________________')
-    });
+        function request() {
+            return axios.get('http://www.reddit.com' + response.data.data.children[index].data.permalink + ".json")
+            .then(response => {
+                //add all desired data to post object
+                simplePost = createPostObj(response.data);
+                writeToDB(simplePost, dbase);
+
+                index++;
+                if (index >= postArray.length) {
+                    db.close();
+                    return 'done';
+                }
+                return request();
+            })
+            .catch(error => {
+                console.log(error);
+            })
+        }
+        return request();
+    })
+    
 }
 
-function writeToDB(redditJSON, dbase){
-    for(let post of redditJSON){
-        //inserts simplified post into redditData collection in redditMining DB
-        dbase.collection("redditData").insertOne(simplifyPost(post), function(err, res) {
-            if(err) throw err;
-            console.log("1 document inserted");
-        })
-    }
+function writeToDB(postObj, dbase){
+    //inserts simplified post into redditData collection in redditMining DB
+    dbase.collection("redditData").insertOne(postObj, function(err, res) {
+        if(err) throw err;
+        console.log("1 document inserted");
+    })
 }
 
-//creates new post object with only desired data keys
-function simplifyPost(post){
+function createPostObj(postData){
     let simplePost = {};
     let awards = [];
-    for(let award of post.data.all_awardings) {
+    for(let award of postData[0].data.children[0].data.all_awardings) {
         let awardObj = {};
         awardObj.count = award.count;
         awardObj.type = award.name;
         awards.push(awardObj);
     }
     simplePost.time = getDateTime();
-    simplePost.subreddit = post.data.subreddit_name_prefixed;
-    simplePost.title = post.data.title;
-    simplePost.author = post.data.author;
-    simplePost.upvotes = post.data.ups;
-    simplePost.thumbnail = post.data.thumbnail;
-    simplePost.edited = post.data.edited;
-    simplePost.linkDomain = post.data.domain;
+    simplePost.title = postData[0].data.children[0].data.title;
+    simplePost.author = postData[0].data.children[0].data.author;
+    simplePost.upvotes = postData[0].data.children[0].data.ups;
     simplePost.awards = awards;
-    simplePost.awarders = post.data.awarders;
-    simplePost.numComments = post.data.num_comments;
-    simplePost.permalink = post.data.permalink;
-    simplePost.stickied = post.data.stickied;
-    simplePost.titleLink = post.data.url;
-    simplePost.subSubscribers = post.data.subreddit_subscribers;
+    simplePost.awarders = postData[0].data.children[0].data.awarders;
+    simplePost.numComments = postData[0].data.children[0].data.num_comments;
+    simplePost.subreddit = postData[0].data.children[0].data.subreddit_name_prefixed;
+    simplePost.subSubscribers = postData[0].data.children[0].data.subreddit_subscribers;
+    simplePost.thumbnail = postData[0].data.children[0].data.thumbnail;
+    simplePost.edited = postData[0].data.children[0].data.edited;
+    simplePost.linkDomain = postData[0].data.children[0].data.domain;
+    simplePost.stickied = postData[0].data.children[0].data.stickied;
+    simplePost.linkURL = postData[0].data.children[0].data.url;
+    simplePost.comments = [];
+
+    for(let i = 1; i < postData[1].data.children.length; i++){
+        let comment = {};
+        comment.body = postData[1].data.children[i].data.body;
+        comment.author = postData[1].data.children[i].data.author;
+        comment.upvotes = postData[1].data.children[i].data.ups;
+        comment.replies = postData[1].data.children[i].data.replies;
+
+        simplePost.comments.push(comment);
+    }
     return simplePost;
 }
 
