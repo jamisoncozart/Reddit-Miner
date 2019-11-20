@@ -1,13 +1,13 @@
 const axios = require('axios');
 const MongoClient = require('mongodb').MongoClient;
 const keys = require('./keys.js');
-const uri = keys.url;
+const nodemailer = require('nodemailer');
 
 main();
-//calls main() every 6 hours
+//calls main() every 12 hours
 setInterval(function(){
     main();
-}, 40000/* 1000 * 60 * 60 * 6 */);
+}, 1000 * 60 * 60 * 12);
 
 
 function main() {
@@ -17,6 +17,13 @@ function main() {
     })
     .catch(error => {
         console.log(error);
+        transporter.sendMail(mailOptions, function(error, info){
+            if(error){
+                console.log(error);
+            } else {
+                console.log('Email sent: ' + info.response);
+            }
+        });
     })
     .finally(function(){
         //runs every time
@@ -25,7 +32,7 @@ function main() {
 
 function makeRequestsFromArray(response, postArray) {
     let index = 0;
-    MongoClient.connect(uri, {useUnifiedTopology: true}, function(err,db) {
+    MongoClient.connect(keys.url, {useUnifiedTopology: true}, function(err,db) {
         if(err) throw err;
         console.log('=================================');
         console.log("Server: spinning up on port 27017");
@@ -48,6 +55,13 @@ function makeRequestsFromArray(response, postArray) {
             })
             .catch(error => {
                 console.log(error);
+                transporter.sendMail(mailOptions, function(error, info){
+                    if(error){
+                        console.log(error);
+                    } else {
+                        console.log('Email sent: ' + info.response);
+                    }
+                });
             })
         }
         return request();
@@ -113,4 +127,19 @@ function getDateTime() {
     var day  = date.getDate();
     day = (day < 10 ? "0" : "") + day;
     return year + ":" + month + ":" + day + ":" + hour + ":" + minute;
+};
+
+var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: keys.email,
+        pass: keys.password
+    }
+});
+
+var mailOptions = {
+    from: keys.email,
+    to: keys.recieveEmail,
+    subject: 'Node Server: Error',
+    text: 'A .catch block was triggered in your reddit-mining application'
 };
