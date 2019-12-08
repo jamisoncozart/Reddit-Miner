@@ -3,20 +3,23 @@ const MongoClient = require('mongodb').MongoClient;
 const keys = require('./keys.js');
 const nodemailer = require('nodemailer');
 
+//initially runs main() when program is called
 main();
-//calls main() every 12 hours
+//runs main() every 6 hours
 setInterval(function(){
     main();
-}, 1000 * 60 * 60 * 12);
+}, 1000 * 60 * 60 * 6);
 
 
 function main() {
+    //Makes initial axios request to grab the front-page posts object
     axios.get('http://www.reddit.com/.json')
     .then(response => {
         makeRequestsFromArray(response, response.data.data.children);
     })
     .catch(error => {
         console.log(error);
+        //sends email if error is caught
         transporter.sendMail(mailOptions, function(error, info){
             if(error){
                 console.log(error);
@@ -25,13 +28,12 @@ function main() {
             }
         });
     })
-    .finally(function(){
-        //runs every time
-    })
 }
 
+//Makes second axios request to the permalink in each post object mined from the front page. This will request all comment threads.
 function makeRequestsFromArray(response, postArray) {
     let index = 0;
+    //Connect to MongoDB Atlas database
     MongoClient.connect(keys.url, {useUnifiedTopology: true}, function(err,db) {
         if(err) throw err;
         console.log('=================================');
@@ -39,13 +41,13 @@ function makeRequestsFromArray(response, postArray) {
         console.log("Time: " + getDateTime());
         console.log('---------------------------------');
         let dbase = db.db('redditMining');
+        //Recursive function to loop through all post objects and request the permalink to the comment thread
         function request() {
             return axios.get('http://www.reddit.com' + response.data.data.children[index].data.permalink + ".json")
             .then(response => {
                 //add all desired data to post object
                 simplePost = createPostObj(response.data);
                 writeToDB(simplePost, dbase);
-
                 index++;
                 if (index >= postArray.length) {
                     db.close();
@@ -55,6 +57,7 @@ function makeRequestsFromArray(response, postArray) {
             })
             .catch(error => {
                 console.log(error);
+                //sends email upon catching an error
                 transporter.sendMail(mailOptions, function(error, info){
                     if(error){
                         console.log(error);
@@ -65,18 +68,18 @@ function makeRequestsFromArray(response, postArray) {
             })
         }
         return request();
-    })
-    
+    })  
 }
 
+//inserts simplified post into redditData collection in redditMining DB
 function writeToDB(postObj, dbase){
-    //inserts simplified post into redditData collection in redditMining DB
     dbase.collection("redditData").insertOne(postObj, function(err, res) {
         if(err) throw err;
         console.log("1 document inserted");
     })
 }
 
+//creates post object with selected data and all comments
 function createPostObj(postData){
     let simplePost = {};
     let awards = [];
@@ -87,6 +90,7 @@ function createPostObj(postData){
         awards.push(awardObj);
     }
     simplePost.time = getDateTime();
+    //Trimming the fat off the post objects to only select desired data
     simplePost.title = postData[0].data.children[0].data.title;
     simplePost.author = postData[0].data.children[0].data.author;
     simplePost.upvotes = postData[0].data.children[0].data.ups;
@@ -102,6 +106,7 @@ function createPostObj(postData){
     simplePost.linkURL = postData[0].data.children[0].data.url;
     simplePost.comments = [];
 
+    //Loop through comment thread and save all comments and their replies
     for(let i = 1; i < postData[1].data.children.length; i++){
         let comment = {};
         comment.body = postData[1].data.children[i].data.body;
@@ -129,6 +134,7 @@ function getDateTime() {
     return year + ":" + month + ":" + day + ":" + hour + ":" + minute;
 };
 
+//specify email host and credentials
 var transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -137,6 +143,7 @@ var transporter = nodemailer.createTransport({
     }
 });
 
+//specify what your email will say
 var mailOptions = {
     from: keys.email,
     to: keys.recieveEmail,
