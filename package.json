@@ -1,5 +1,9 @@
 {
   "name": "reddit-mining",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jamisoncozart/Reddit-Miner"
+  },
   "version": "1.0.0",
   "description": "",
   "main": "app.js",

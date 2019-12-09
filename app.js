@@ -20,6 +20,7 @@ function main() {
     .catch(error => {
         console.log(error);
         //sends email if error is caught
+        if(keys.email && keys.recieveEmail && keys.password){
         transporter.sendMail(mailOptions, function(error, info){
             if(error){
                 console.log(error);
@@ -27,6 +28,10 @@ function main() {
                 console.log('Email sent: ' + info.response);
             }
         });
+        }
+        else{
+            console.log("Email parameters not set");
+        }
     })
 }
 
@@ -58,6 +63,7 @@ function makeRequestsFromArray(response, postArray) {
             .catch(error => {
                 console.log(error);
                 //sends email upon catching an error
+                if(keys.email && keys.recieveEmail && keys.password){
                 transporter.sendMail(mailOptions, function(error, info){
                     if(error){
                         console.log(error);
@@ -65,6 +71,7 @@ function makeRequestsFromArray(response, postArray) {
                         console.log('Email sent: ' + info.response);
                     }
                 });
+                }
             })
         }
         return request();
