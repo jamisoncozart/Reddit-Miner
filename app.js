@@ -1,6 +1,7 @@
 const axios = require('axios');
 const MongoClient = require('mongodb').MongoClient;
 const keys = require('./keys.js');
+const url = keys.url || "mongodb://localhost:27017"
 const nodemailer = require('nodemailer');
 
 //initially runs main() when program is called
@@ -39,7 +40,7 @@ function main() {
 function makeRequestsFromArray(response, postArray) {
     let index = 0;
     //Connect to MongoDB Atlas database
-    MongoClient.connect(keys.url, {useUnifiedTopology: true}, function(err,db) {
+    MongoClient.connect(url, {useUnifiedTopology: true}, function(err,db) {
         if(err) throw err;
         console.log('=================================');
         console.log("Server: spinning up on port 27017");

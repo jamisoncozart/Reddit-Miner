@@ -1,8 +1,10 @@
 /*
  *  Uncomment the following parameters and fill in with your
- *  information to use reddit miner.
- *  Email, password, and recieveEmail are optional if you with to recieve an email on error. 
+ *  information to use Reddit Miner.
+ *  Email, password, and recieveEmail are optional if you wish to recieve an email on error. 
  *  https://docs.mongodb.com/manual/reference/connection-string/
+ * 
+ * If no URL is provided, the url will default to localhost:27017
  */
 
 var atlasURL = {

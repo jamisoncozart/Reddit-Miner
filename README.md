@@ -4,7 +4,7 @@ Automated data mining off of Reddit's front page and storage in database for dat
 
 ## Getting Started
 
-Download the .zip file and extract all files into directory of your choice. Open folder in preferred text editor.
+Download the .zip file and extract all files into directory of your choice OR clone the repository to a directory. Open project directory in preferred text editor.
 
 ### Prerequisites
 
@@ -24,17 +24,17 @@ Download the .zip file and extract all files into directory of your choice. Open
     ```
 3. Modify the parameters within keys.js with the following:
     ```
-    **url**: replace with the URL to your MongoDB Atlas database. This URL can be found by selecting your desired cluster then clicking 'connect' -> 'Connect your application'
+    url: replace with the URL to your MongoDB Atlas database. This URL can be found by selecting your desired cluster then clicking 'connect' -> 'Connect your application'
     Alternatively, you can connect to an instance of MongoDB running locally, which you can connect with the url: mongodb://localhost:27017/admin.
     MongoDB compass can be a good way to visualize locally.
 
-    **email**: this will be the host email address. If you want to have email notifications when your program runs into errors, this will be the email sender address.
+    email: this will be the host email address. If you want to have email notifications when your program runs into errors, this will be the email sender address.
 
-    **password**: the appropriate password for the sender email address.
+    password: the appropriate password for the sender email address.
 
-    **recieveEmail**: the recieving email address. This can be your main email, or any email that you recieve notifications from so you can keep tabs on errors your program might run into.
+    recieveEmail: the recieving email address. This can be your main email, or any email that you recieve notifications from so you can keep tabs on errors your program might run into.
 
-    **Save** the `keys.js` file
+    Save the `keys.js` file
     ```
 5. Open command line, navigate to the extracted `Reddit-Miner-master` working directory, and type the following:
 
