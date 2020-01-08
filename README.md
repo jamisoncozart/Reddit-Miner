@@ -1,6 +1,12 @@
 ﻿# Reddit Miner
 
-Automated data mining off of Reddit's front page and storage in database for data analysis and visualization. Local application built on Node.js.
+Automated data mining off of Reddit's front page and storage in a MongoDB database. Local application built on Node.js.
+
+## What data does it mine?
+
+* The first 25 posts from the front page of reddit
+* All relevant data to the post including upvotes, author, subreddit, title, awards, etc...
+* All comments and their children including upvotes, author, awards
 
 ## Getting Started
 
@@ -77,7 +83,6 @@ Time: 2019:12:07:21:43
 1 document inserted
 1 document inserted
 ```
-There will always be 25 documents inserted for each request made.
 
 ## Current Issues
 
@@ -95,3 +100,7 @@ I have some suspicion that these subreddits have a 'no bot' policy, so any reque
 
 * **Jamison Cozart** - *All* - (https://github.com/jamisoncozart)
 * **Alexander Hull** - *Feature/Cleanup* - (https://github.com/hullale)
+
+## Want to contact the developers?
+
+* Jamison Cozart - jamisoncozart@gmail.com
