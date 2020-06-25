@@ -1,6 +1,6 @@
 ﻿# Reddit Miner
 
-Automated data mining off of Reddit's front page and storage in a MongoDB database. Local application built on Node.js.
+Automated data mining off of Reddit's front page and storage in a MongoDB database with an automated email service for error logging.
 
 ## What data does it mine?
 
